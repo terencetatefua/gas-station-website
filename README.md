@@ -19,39 +19,22 @@ A complete cloud-native fuel station API application deployed using **Terraform*
 
 ## 📁 Folder Structure
 
-### Application Directory
+### 📁 `app/` Directory (Descending Order)
 
-app/
-├── views/
-│   └── index.html
-├── routes/
-│   └── stations.js
-├── public/
-│   └── css/
-│       └── styles.css
-├── package.json
-├── gasstation-app.zip
-├── db.js
-├── app.js
-├── README.md
+app/ ├── views/ │ └── index.html ├── routes/ │ └── stations.js ├── public/ │ └── css/ │ └── styles.css ├── package.json ├── gasstation-app.zip ├── db.js ├── app.js ├── README.md
 
+shell
+Copy
+Edit
 
+### 📁 `terraform/` Directory
 
+terraform/ ├── vpc.tf ├── variables.tf ├── terraform.tfvars ├── secret.tf ├── rds.tf ├── outputs.tf ├── iam.tf ├── ec2.tf ├── bootstrap.sh ├── alb.tf ├── route53.tf
 
-### Terraform Directory
+yaml
+Copy
+Edit
 
-terraform/
-├── vpc.tf
-├── variables.tf
-├── terraform.tfvars
-├── secret.tf
-├── rds.tf
-├── outputs.tf
-├── iam.tf
-├── ec2.tf
-├── bootstrap.sh
-├── alb.tf
-├── route53.tf
 ---
 
 ## ✅ Prerequisites
@@ -80,10 +63,10 @@ Update your terraform.tfvars:
 hcl
 Copy
 Edit
-hosted_zone_name   = "yourdomain.com"
-subdomain_record   = "gasstation"
+hosted_zone_name = "yourdomain.com"
+subdomain_record = "gasstation"
 3️⃣ Secrets Manager Credentials
-Manually create the RDS credentials secret:
+Manually create the RDS credentials secret.
 
 🔐 Secret Name
 Copy
@@ -98,34 +81,31 @@ Edit
   "password": "YourSecurePassword123!"
 }
 4️⃣ Zip the Application for EC2 Bootstrap
-Your Node.js app must be zipped and uploaded to S3.
-
-📦 Zip your app
 From the app/ directory:
 
 bash
 Copy
 Edit
 zip -r gasstation-app.zip . -x "*.env"
-NOTE: .env is dynamically generated on the instance using the secret
+Then upload it to S3:
 
-☁️ Upload to S3
 bash
 Copy
 Edit
 aws s3 cp gasstation-app.zip s3://fuelmaxpro-app-artifacts/
-5️⃣ SSH Key Pair (optional but useful)
-To SSH into EC2, make sure you have a key pair created in your region.
+5️⃣ SSH Key Pair
+Make sure your AWS region has a key pair available for EC2 SSH access.
 
-Example (in terraform.tfvars)
+In terraform.tfvars:
+
 hcl
 Copy
 Edit
 key_name = "tristy"
 6️⃣ Terraform Installed
-Install Terraform CLI: 👉 https://developer.hashicorp.com/terraform/downloads
+Install Terraform CLI 👉 https://developer.hashicorp.com/terraform/downloads
 
-Test it:
+Check installation:
 
 bash
 Copy
@@ -139,8 +119,6 @@ cd terraform
 terraform init
 terraform apply -auto-approve
 🌐 Test the API
-Once deployed:
-
 bash
 Copy
 Edit
@@ -151,8 +129,7 @@ GET /stations — Get all stations
 
 POST /stations — Add new station
 
-Example payload:
-
+Sample Payload
 json
 Copy
 Edit
@@ -161,13 +138,28 @@ Edit
   "location": "Miami, FL",
   "fuel_type": "Diesel"
 }
-🧹 Clean Up
-To destroy everything:
+🧠 SQL to Initialize RDS Table
+If needed, log in to RDS and create your table manually:
 
+sql
+Copy
+Edit
+CREATE DATABASE gasstations;
+
+USE gasstations;
+
+CREATE TABLE stations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  location VARCHAR(255),
+  fuel_type VARCHAR(50),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+🧹 Clean Up
 bash
 Copy
 Edit
 terraform destroy -auto-approve
 👷‍♂️ Author
 Developed by @terencetatefua
-Built with ❤️ for cloud-native infrastructure!
+Built with ❤️ for cloud-native infrastructure.
