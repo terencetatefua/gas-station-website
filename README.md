@@ -21,20 +21,37 @@ A complete cloud-native fuel station API application deployed using **Terraform*
 
 ### Application Directory
 
-app/ ├── app.js # Express server ├── db.js # DB connection logic using Secrets Manager ├── package.json # Dependencies ├── README.md ├── routes/ │ └── stations.js # GET and POST routes ├── public/ │ └── css/ │ └── styles.css # Landing page styles ├── views/ │ └── index.html # Front-end landing page └── gasstation-app.zip # Zipped S3 artifact (generated)
+app/
+├── views/
+│   └── index.html
+├── routes/
+│   └── stations.js
+├── public/
+│   └── css/
+│       └── styles.css
+├── package.json
+├── gasstation-app.zip
+├── db.js
+├── app.js
+├── README.md
 
-shell
-Copy
-Edit
+
+
 
 ### Terraform Directory
 
-terraform/ ├── vpc.tf ├── iam.tf ├── rds.tf ├── alb.tf ├── ec2.tf ├── route53.tf ├── secret.tf ├── bootstrap.sh ├── variables.tf ├── outputs.tf └── terraform.tfvars
-
-yaml
-Copy
-Edit
-
+terraform/
+├── vpc.tf
+├── variables.tf
+├── terraform.tfvars
+├── secret.tf
+├── rds.tf
+├── outputs.tf
+├── iam.tf
+├── ec2.tf
+├── bootstrap.sh
+├── alb.tf
+├── route53.tf
 ---
 
 ## ✅ Prerequisites
