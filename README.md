@@ -153,7 +153,7 @@ cd terraform
 terraform init
 terraform apply -auto-approve
 ```
-
+![alt text](image.png)
 ---
 
 ## 🌐 Test the API
@@ -164,7 +164,7 @@ Once deployed, you should be able to access your endpoint:
 curl https://gasstation.yourdomain.com/
 # => Welcome to FuelMaxPro API 🚀
 ```
-
+![alt text](image-2.png)
 ---
 
 ## 📄 API Endpoints
@@ -204,7 +204,7 @@ CREATE TABLE stations (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-
+![alt text](image-1.png)
 ---
 
 ## 🧹 Clean Up
@@ -214,7 +214,7 @@ To tear down everything:
 ```bash
 terraform destroy -auto-approve
 ```
-
+![alt text](image-3.png)
 ---
 
 ## 👷‍♂️ Author

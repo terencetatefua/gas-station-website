@@ -1,7 +1,7 @@
 resource "aws_launch_template" "lt" {
   name_prefix   = "fuelmaxpro-nodejs-"
   image_id      = "ami-04f167a56786e4b09"
-  instance_type = "t3.micro"
+  instance_type = "t2.micro"
   key_name      = "tristy" # SSH key for manual login if needed
 
   iam_instance_profile {
