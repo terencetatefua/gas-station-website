@@ -74,3 +74,22 @@ app/
 ├── views/
 │   └── index.html       # Landing page (static)
 └── README.md            # You are here!
+
+# Move into the cloned repo
+cd gas-station-website
+
+# Pull the latest changes from main
+git pull origin main
+
+# Check the current status
+git status
+
+# Stage and commit changes
+git add .
+git commit -m "updated read file"
+
+# Push to the main branch
+git push origin main
+```
+![alt text](image.png)
+![alt text](image-1.png)
