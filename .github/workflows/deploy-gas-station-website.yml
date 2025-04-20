@@ -1,4 +1,4 @@
-name: Upload ZIP to S3 + Terraform Apply + DAST Scan with Report
+name: Upload to S3 + Terraform Apply + DAST Scan with Report
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   upload-artifact:
-    name: 📦 Upload gastation-app.zip to S3
+    name: 📦 Upload gasstation-app.zip to S3
     runs-on: ubuntu-latest
 
     steps:
@@ -22,8 +22,8 @@ jobs:
 
       - name: 🚚 Upload ZIP to S3
         run: |
-          ZIP_PATH="app/gastation-app.zip"
-          S3_KEY="latest/gastation-app.zip"
+          ZIP_PATH="app/gasstation-app.zip"
+          S3_KEY="latest/gasstation-app.zip"
 
           if [ ! -f "$ZIP_PATH" ]; then
             echo "❌ File not found: $ZIP_PATH"
