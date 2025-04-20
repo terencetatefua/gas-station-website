@@ -20,6 +20,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: 🛡️ Validate S3 Bucket Secret
+        run: |
+          if [ -z "${{ secrets.S3_BUCKET_NAME }}" ]; then
+            echo "❌ S3_BUCKET_NAME secret is not set!"
+            exit 1
+          fi
+
       - name: 🚚 Upload ZIP to S3
         run: |
           ZIP_PATH="app/gasstation-app.zip"
