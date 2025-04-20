@@ -1,17 +1,17 @@
-name: Deploy to S3 for EC2 + DAST Scan
+name: Upload ZIP for EC2 + DAST Scan
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy-to-s3:
-    name: 📤 Sync Code to S3 (EC2 Pulls from Here)
+  upload-zip-to-s3:
+    name: 📦 Upload ZIP to S3
     runs-on: ubuntu-latest
     environment: production
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: 📥 Checkout Repo
         uses: actions/checkout@v4
 
       - name: 🔐 Configure AWS Credentials
@@ -21,18 +21,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: 📦 Upload Code to S3 Bucket
+      - name: 🚚 Upload gastation-app.zip to S3
         run: |
-          aws s3 sync . s3://${{ secrets.S3_BUCKET_NAME }}/ --delete
-        # This safely uploads your website code so EC2 can fetch it
+          aws s3 cp app/gastation-app.zip s3://${{ secrets.S3_BUCKET_NAME }}/latest/gastation-app.zip
+        # Adjust S3 key path as needed
 
   dast-scan:
-    name: 🛡️ DAST Security Scan with OWASP ZAP
+    name: 🛡️ DAST Security Scan
     runs-on: ubuntu-latest
-    needs: deploy-to-s3
+    needs: upload-zip-to-s3
 
     steps:
-      - name: 🔎 ZAP Baseline Scan
+      - name: 🔎 Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: ${{ secrets.SITE_URL }}
