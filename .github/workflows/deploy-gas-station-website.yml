@@ -1,17 +1,16 @@
-name: Upload ZIP for EC2 + DAST Scan
+name: Upload gastation-app.zip to S3 + Terraform Apply + DAST Scan
 
 on:
   push:
     branches: [main]
 
 jobs:
-  upload-zip-to-s3:
-    name: 📦 Upload ZIP to S3
+  upload-artifact:
+    name: 📦 Upload gastation-app.zip to S3
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
-      - name: 📥 Checkout Repo
+      - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
       - name: 🔐 Configure AWS Credentials
@@ -21,15 +20,48 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: 🚚 Upload gastation-app.zip to S3
+      - name: 🚚 Upload ZIP to S3
         run: |
-          aws s3 cp app/gastation-app.zip s3://${{ secrets.S3_BUCKET_NAME }}/latest/gastation-app.zip
-        # Adjust S3 key path as needed
+          ZIP_PATH="app/gastation-app.zip"
+          S3_KEY="latest/gastation-app.zip"
+
+          if [ ! -f "$ZIP_PATH" ]; then
+            echo "❌ File not found: $ZIP_PATH"
+            exit 1
+          fi
+
+          echo "✅ Uploading $ZIP_PATH to s3://${{ secrets.S3_BUCKET_NAME }}/$S3_KEY..."
+          aws s3 cp "$ZIP_PATH" "s3://${{ secrets.S3_BUCKET_NAME }}/$S3_KEY"
+
+  terraform-deploy:
+    name: 🛠️ Terraform Apply
+    runs-on: ubuntu-latest
+    needs: upload-artifact
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔐 Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: ⚙️ Terraform Init
+        run: terraform init
+
+      - name: ✅ Terraform Apply
+        run: terraform apply -auto-approve
 
   dast-scan:
-    name: 🛡️ DAST Security Scan
+    name: 🛡️ OWASP ZAP DAST Scan
     runs-on: ubuntu-latest
-    needs: upload-zip-to-s3
+    needs: terraform-deploy
 
     steps:
       - name: 🔎 Run OWASP ZAP Baseline Scan
