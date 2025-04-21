@@ -23,11 +23,11 @@ resource "aws_iam_role" "ec2_role" {
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "fuelmaxpro-ec2-profile"
+  name = "fuelmaxpro1-ec2-profile"
   role = aws_iam_role.ec2_role.name
 
   tags = {
-    Name        = "fuelmaxpro-ec2-profile"
+    Name        = "fuelmaxpro1-ec2-profile"
     Project     = "FuelMaxPro"
     Environment = "production"
     ManagedBy   = "Terraform"

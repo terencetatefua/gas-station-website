@@ -1,9 +1,9 @@
 resource "aws_db_subnet_group" "subnet_group" {
-  name       = "fuelmaxpro-db-subnet-group"
+  name       = "fuelmaxpro-db-subnet-group1"
   subnet_ids = aws_subnet.db[*].id
 
   tags = {
-    Name = "fuelmaxpro-db-subnet-group"
+    Name = "fuelmaxpro-db-subnet-group1"
   }
 }
 
