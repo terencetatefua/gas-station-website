@@ -81,7 +81,7 @@ jobs:
 
       - name: ⏳ Wait for EC2 Application to be Ready
         run: |
-          MAX_RETRIES=10
+          MAX_RETRIES=20
           RETRY_DELAY=10
           URL="https://gasstation.tamispaj.com/"
 
@@ -96,7 +96,7 @@ jobs:
             echo "Attempt $i: Site not ready (HTTP $STATUS). Retrying in $RETRY_DELAY seconds..."
             sleep $RETRY_DELAY
             if [[ $i -eq $MAX_RETRIES ]]; then
-              echo "❌ Site did not become ready in time. Exiting..."
+              echo "❌ Site did not become ready in time after $((MAX_RETRIES * RETRY_DELAY)) seconds. Exiting..."
               exit 1
             fi
           done
