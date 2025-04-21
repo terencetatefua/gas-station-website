@@ -76,12 +76,17 @@ jobs:
     needs: terraform-deploy
 
     steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
       - name: 🔍 Run OWASP ZAP Scan and Save HTML Report
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: ${{ secrets.SITE_URL }}
-          format: html
-          cmd_options: "-r zap_report.html"
+          cmd_options: >
+            -r zap_report.html
+            -w zap_report.md
+            -J zap_report.json
           docker_name: 'ghcr.io/zaproxy/zaproxy'
 
       - name: 📤 Upload ZAP HTML Report
