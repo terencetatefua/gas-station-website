@@ -82,8 +82,9 @@ jobs:
       - name: 🔍 Run OWASP ZAP Scan and Save HTML Report
         uses: zaproxy/action-baseline@v0.11.0
         with:
-          target: ${{ secrets.SITE_URL }}
+          target: https://gasstation.tamispaj.com/
           cmd_options: >
+            -t https://gasstation.tamispaj.com/
             -r zap_report.html
             -w zap_report.md
             -J zap_report.json
