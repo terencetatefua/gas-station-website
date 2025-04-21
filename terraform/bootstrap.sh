@@ -42,7 +42,7 @@ DB_PASS=$(echo "$SECRET_JSON" | jq -r .password)
 mkdir -p /home/ubuntu/app
 cd /home/ubuntu
 echo "⬇️ Downloading app from S3..."
-aws s3 cp s3://${app_bucket_name}/gasstation-app.zip app.zip
+aws s3 cp s3://${app_bucket_name}/latest/gasstation-app.zip app.zip
 unzip -q app.zip -d app
 
 # 🧪 Write .env file
