@@ -13,10 +13,6 @@ jobs:
     name: 💣 Terraform Destroy
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: terraform
-
     steps:
       - name: 🛑 Check confirmation input
         run: |
@@ -40,7 +36,7 @@ jobs:
         with:
           terraform_version: 1.6.6
 
-      - name: ⚙️ Initialize Terraform with Remote Backend
+      - name: ⚙️ Terraform Init
         run: terraform init -reconfigure
 
       - name: 💣 Terraform Destroy
