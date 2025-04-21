@@ -79,6 +79,28 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: ⏳ Wait for EC2 Application to be Ready
+        run: |
+          MAX_RETRIES=10
+          RETRY_DELAY=10
+          URL="https://gasstation.tamispaj.com/"
+
+          echo "⏳ Waiting for $URL to respond with 200 OK..."
+
+          for i in $(seq 1 $MAX_RETRIES); do
+            STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" "$URL")
+            if [[ "$STATUS" == "200" || "$STATUS" == "301" || "$STATUS" == "302" ]]; then
+              echo "✅ Site is up (HTTP $STATUS)! Proceeding with scan..."
+              break
+            fi
+            echo "Attempt $i: Site not ready (HTTP $STATUS). Retrying in $RETRY_DELAY seconds..."
+            sleep $RETRY_DELAY
+            if [[ $i -eq $MAX_RETRIES ]]; then
+              echo "❌ Site did not become ready in time. Exiting..."
+              exit 1
+            fi
+          done
+
       - name: 🔍 Run OWASP ZAP Scan and Save HTML Report
         uses: zaproxy/action-baseline@v0.11.0
         with:
