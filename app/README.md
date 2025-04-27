@@ -46,7 +46,6 @@ subdomain_record = "gasstation"
 - **Go to AWS Console → S3 → Create bucket**
 - Bucket Name: `fuelmaxpro-tf-state`
 - Region: `us-east-2 (Ohio)`
-- Default settings are fine (optional: enable encryption/versioning).
 
 ---
 
@@ -54,10 +53,9 @@ subdomain_record = "gasstation"
 
 - **Go to AWS Console → DynamoDB → Create table**
 - Table Name: `terraform-locks`
-- Partition Key:
+- Partition Key:  
   - Name: `LockID`
   - Type: `String`
-- Default settings (On-Demand billing) are fine.
 
 _Update `main.tf` backend block to use these:_
 
@@ -80,7 +78,7 @@ terraform {
 ✅ **No manual app upload needed anymore.**  
 The GitHub Actions pipeline will automatically:
 
-- Package the Node.js app into a `gasstation-app.zip`
+- Package the Node.js app into `gasstation-app.zip`
 - Upload the ZIP file to this bucket
 
 You only need to create the bucket:
@@ -94,9 +92,8 @@ You only need to create the bucket:
 ### 5. 🔐 Create Secrets Manager Secret for DB Credentials
 
 - **Go to AWS Console → Secrets Manager → Store a new secret**
-- Select **Other type of secret**.
-- **Secret Name**: `fuelmaxpro-db-credentials`
-- **Secret Value (JSON)**:
+- Secret Name: `fuelmaxpro-db-credentials`
+- Secret Value:
 
 ```json
 {
@@ -110,10 +107,8 @@ You only need to create the bucket:
 ### 6. 🔑 Create EC2 Key Pair
 
 - **Go to AWS Console → EC2 → Key Pairs → Create Key Pair**
-- **Key Name**: `tristy`
+- Key Name: `tristy`
 - Save the `.pem` file securely.
-
-_Reference this in `terraform.tfvars`:_
 
 ```hcl
 key_name = "tristy"
@@ -144,9 +139,9 @@ terraform apply -auto-approve
 ## 🌐 Test the API
 
 ```bash
-curl https://gasstation.yourdomain.com/ (https://gasstation.tamispaj.com/)
-![alt text](image-3.png)
+curl https://gasstation.yourdomain.com/
 ```
+![Test API](image.png)
 
 ---
 
@@ -173,7 +168,7 @@ curl https://gasstation.yourdomain.com/ (https://gasstation.tamispaj.com/)
 
 ## 🔐 Environment Variables (.env)
 
-The `.env` file is **generated dynamically** on the EC2 instance during startup:
+The `.env` file is generated dynamically on the EC2 instance:
 
 ```env
 DB_HOST=<your-rds-endpoint>
@@ -200,48 +195,54 @@ CREATE TABLE stations (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-![alt text](image-4.png)
+![SQL Schema Setup](image-4.png)
 
 ---
 
 # 🔁 GitHub Actions CI/CD Pipeline
 
 The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml` automates deployment on **every push to `main`**.
-![alt text](image-9.png)
+
+![GitHub Actions Overview](image-9.png)
+
 ---
 
 ## 📦 1. Upload Artifact to S3 (`upload-artifact`)
 
-- **Checkout** repository
-- **Configure AWS credentials**
-- **Validate** `S3_BUCKET_NAME` exists
-- **Zip and upload** the app into S3 automatically
+- Checkout repository
+- Configure AWS credentials
+- Validate `S3_BUCKET_NAME` secret
+- Zip and upload `gasstation-app.zip` to S3 automatically
 
-✅ No manual upload needed!
+✅ No manual S3 upload!
 
 ---
 
 ## 🛠️ 2. Terraform Apply (`terraform-deploy`)
 
-- **Checkout** repository
-- **Install Terraform v1.6.6**
-- **Terraform init** using S3 + DynamoDB backend
-- **Terraform apply** to deploy VPC, EC2, ALB, RDS, etc.
+- Checkout repository
+- Install Terraform v1.6.6
+- Terraform `init` using S3 backend
+- Terraform `apply` to deploy AWS infrastructure
 
 ---
 
 ## 🛡️ 3. DAST Scan with OWASP ZAP (`dast-scan`)
 
-- **Wait** until the app is reachable at `https://gasstation.tamispaj.com/`
-- **Run** OWASP ZAP Dynamic scan
-- **Generate reports** (`html`, `markdown`, `json`)
-- **Upload reports** as GitHub artifacts
+- Wait for `https://gasstation.tamispaj.com/` to be reachable
+- Run OWASP ZAP Dynamic Security Scan
+- Generate and upload reports (`HTML`, `Markdown`, `JSON`)
 
 ---
-![alt text](image-12.png)
-![alt text](image-13.png)
-![alt text](image-14.png)
-![alt text](image-10.png)
+
+### 📸 OWASP ZAP and Security Pipeline Screenshots
+
+![Wait for App Ready](image-12.png)
+![Running OWASP ZAP](image-13.png)
+![ZAP Report Generated](image-14.png)
+![Upload ZAP Report](image-10.png)
+
+---
 
 ## ✅ Pipeline Summary
 
@@ -281,30 +282,45 @@ cd gas-station-website
 
 # Pull latest changes
 git pull origin main
-![alt text](image-8.png)
+```
+![Git Pull](image-8.png)
+
+```bash
 # Check repo status
 git status
-![alt text](image-7.png)
+```
+![Git Status](image-7.png)
+
+```bash
 # Stage changes
 git add .
-![alt text](image-5.png)
+```
+![Git Add](image-5.png)
+
+```bash
 # Commit changes
 git commit -m "updated readme"
-![alt text](image-6.png)
+```
+![Git Commit](image-6.png)
+
+```bash
 # Push changes
 git push origin main
 ```
 
 ---
- Clean Up
-To tear down everything:
 
+## 🧹 Clean Up
+
+To destroy the infrastructure:
+
+```bash
 terraform destroy -auto-approve
-![alt text](image-11.png)
+```
+![Terraform Destroy](image-11.png)
+
+---
 
 ## 👷‍♂️ Author
 
 Built by **@terencetatefua**  
-
-
----
