@@ -26,13 +26,11 @@ Before running Terraform or pushing code, complete these **manual AWS Console se
 
 ### 🛠️ Manual AWS Console Prerequisites
 
----
-
 ### 1. 📜 Route 53 Hosted Zone and Domain
 
-- **Buy or own a domain** (e.g., `yourdomain.com`).
-- **Create a hosted zone** in Route 53 for that domain.
-- **Record** the domain and subdomain you want in `terraform.tfvars`:
+- Buy or own a domain (e.g., `yourdomain.com`).
+- Create a hosted zone in Route 53 for that domain.
+- Record the domain and subdomain in `terraform.tfvars`:
 
 ```hcl
 hosted_zone_name = "yourdomain.com"
@@ -43,21 +41,21 @@ subdomain_record = "gasstation"
 
 ### 2. 📦 Create S3 Bucket for Terraform State
 
-- **Go to AWS Console → S3 → Create bucket**
-- Bucket Name: `fuelmaxpro-tf-state`
+- Go to **AWS Console → S3 → Create bucket**  
+- Bucket Name: `fuelmaxpro-tf-state`  
 - Region: `us-east-2 (Ohio)`
 
 ---
 
 ### 3. 🗄️ Create DynamoDB Table for Terraform Locking
 
-- **Go to AWS Console → DynamoDB → Create table**
-- Table Name: `terraform-locks`
+- Go to **AWS Console → DynamoDB → Create table**  
+- Table Name: `terraform-locks`  
 - Partition Key:  
   - Name: `LockID`
   - Type: `String`
 
-_Update `main.tf` backend block to use these:_
+_Update backend block in `main.tf`:_
 
 ```hcl
 terraform {
@@ -75,15 +73,10 @@ terraform {
 
 ### 4. ☁️ Create S3 Bucket for App Artifact Storage
 
-✅ **No manual app upload needed anymore.**  
-The GitHub Actions pipeline will automatically:
+✅ No manual app upload needed anymore (handled by the pipeline).  
+Create the bucket manually:
 
-- Package the Node.js app into `gasstation-app.zip`
-- Upload the ZIP file to this bucket
-
-You only need to create the bucket:
-
-- **Go to AWS Console → S3 → Create Bucket**
+- Go to **AWS Console → S3 → Create Bucket**
 - Bucket Name: `fuelmaxpro-app-artifacts`
 - Region: `us-east-2 (Ohio)`
 
@@ -91,7 +84,7 @@ You only need to create the bucket:
 
 ### 5. 🔐 Create Secrets Manager Secret for DB Credentials
 
-- **Go to AWS Console → Secrets Manager → Store a new secret**
+- Go to **AWS Console → Secrets Manager → Store a new secret**
 - Secret Name: `fuelmaxpro-db-credentials`
 - Secret Value:
 
@@ -106,13 +99,9 @@ You only need to create the bucket:
 
 ### 6. 🔑 Create EC2 Key Pair
 
-- **Go to AWS Console → EC2 → Key Pairs → Create Key Pair**
+- Go to **AWS Console → EC2 → Key Pairs → Create Key Pair**
 - Key Name: `tristy`
 - Save the `.pem` file securely.
-
-```hcl
-key_name = "tristy"
-```
 
 ---
 
@@ -201,6 +190,31 @@ CREATE TABLE stations (
 
 # 🔁 GitHub Actions CI/CD Pipeline
 
+## 🛠️ How to Create the GitHub Actions Workflow (deploy-gas-station.website.yml)
+
+If the GitHub Actions workflow does not exist yet, follow these steps:
+
+1. Go to your **GitHub repository** (e.g., `https://github.com/your-repo-name`).
+
+2. Click on the **Actions** tab at the top.
+
+3. Click **"New Workflow"** or **"set up a workflow yourself"**.
+
+4. Create a new file inside:
+   ```
+   .github/workflows/deploy-gas-station.website.yml
+   ```
+
+5. Paste your GitHub Actions YAML workflow (ZIP upload → Terraform → OWASP ZAP scan).
+
+6. Commit the file to the `main` branch.
+
+✅ Done! Now GitHub Actions triggers on every push!
+
+---
+
+![Workflow File Structure](045a47a4-f31e-4da1-b314-c0c8c3410180.png)
+
 The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml` automates deployment on **every push to `main`**.
 
 ![GitHub Actions Overview](image-9.png)
@@ -212,34 +226,34 @@ The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml
 - Checkout repository
 - Configure AWS credentials
 - Validate `S3_BUCKET_NAME` secret
-- Zip and upload `gasstation-app.zip` to S3 automatically
+- Zip and upload app ZIP to S3 automatically
 
-✅ No manual S3 upload!
+✅ No manual upload required!
 
 ---
 
 ## 🛠️ 2. Terraform Apply (`terraform-deploy`)
 
 - Checkout repository
-- Install Terraform v1.6.6
-- Terraform `init` using S3 backend
-- Terraform `apply` to deploy AWS infrastructure
+- Install Terraform
+- Terraform `init` using S3 + DynamoDB backend
+- Terraform `apply` infrastructure
 
 ---
 
 ## 🛡️ 3. DAST Scan with OWASP ZAP (`dast-scan`)
 
-- Wait for `https://gasstation.tamispaj.com/` to be reachable
-- Run OWASP ZAP Dynamic Security Scan
-- Generate and upload reports (`HTML`, `Markdown`, `JSON`)
+- Wait for EC2 app to be reachable
+- Run dynamic OWASP ZAP scan
+- Generate HTML/Markdown/JSON reports
 
 ---
 
 ### 📸 OWASP ZAP and Security Pipeline Screenshots
 
-![Wait for App Ready](image-12.png)
-![Running OWASP ZAP](image-13.png)
-![ZAP Report Generated](image-14.png)
+![Wait for App Ready](image-12.png)  
+![Running OWASP ZAP](image-13.png)  
+![ZAP Report Generated](image-14.png)  
 ![Upload ZAP Report](image-10.png)
 
 ---
@@ -258,16 +272,16 @@ The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml
 
 ```
 app/
-├── app.js               # Express API entry
-├── db.js                # MySQL connection via Secrets Manager
+├── app.js               # Express app entry
+├── db.js                # MySQL connection
 ├── package.json         # Node.js dependencies
 ├── routes/
-│   └── stations.js      # API routes
+│   └── stations.js      # API logic
 ├── public/
-│   └── css/styles.css   # Frontend assets
+│   └── css/styles.css   # Static assets
 ├── views/
 │   └── index.html       # Landing page
-└── README.md            # Project documentation
+└── README.md            # Documentation
 ```
 
 ---
@@ -307,6 +321,7 @@ git commit -m "updated readme"
 # Push changes
 git push origin main
 ```
+![Git Push](image-new.png) <!-- (your new Git push image) -->
 
 ---
 
@@ -324,3 +339,4 @@ terraform destroy -auto-approve
 ## 👷‍♂️ Author
 
 Built by **@terencetatefua**  
+Built with ❤️ for cloud-native infrastructure.
