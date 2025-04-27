@@ -101,6 +101,10 @@ jobs:
             fi
           done
 
+      - name: 🛠 Set Permissions for Work Directory
+        run: |
+          sudo chmod -R a+w .
+
       - name: 🔍 Run OWASP ZAP Scan and Save HTML Report
         uses: zaproxy/action-baseline@v0.11.0
         with:
