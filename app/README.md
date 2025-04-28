@@ -26,6 +26,8 @@ Before running Terraform or pushing code, complete these **manual AWS Console se
 
 ### 🛠️ Manual AWS Console Prerequisites
 
+---
+
 ### 1. 📜 Route 53 Hosted Zone and Domain
 
 - Buy or own a domain (e.g., `yourdomain.com`).
@@ -55,7 +57,7 @@ subdomain_record = "gasstation"
   - Name: `LockID`
   - Type: `String`
 
-_Update backend block in `main.tf`:_
+_Configure backend in `main.tf`:_
 
 ```hcl
 terraform {
@@ -73,8 +75,8 @@ terraform {
 
 ### 4. ☁️ Create S3 Bucket for App Artifact Storage
 
-✅ No manual app upload needed anymore (handled by the pipeline).  
-Create the bucket manually:
+✅ **No manual app upload needed anymore** (handled by pipeline).  
+You only need to create the bucket:
 
 - Go to **AWS Console → S3 → Create Bucket**
 - Bucket Name: `fuelmaxpro-app-artifacts`
@@ -102,6 +104,10 @@ Create the bucket manually:
 - Go to **AWS Console → EC2 → Key Pairs → Create Key Pair**
 - Key Name: `tristy`
 - Save the `.pem` file securely.
+
+```hcl
+key_name = "tristy"
+```
 
 ---
 
@@ -131,7 +137,6 @@ terraform apply -auto-approve
 curl https://gasstation.yourdomain.com/
 ```
 ![Test API](image.png)
-
 ---
 
 ## 📦 API Endpoints
@@ -185,7 +190,6 @@ CREATE TABLE stations (
 );
 ```
 ![SQL Schema Setup](image-4.png)
-
 ---
 
 # 🔁 GitHub Actions CI/CD Pipeline
@@ -198,18 +202,20 @@ If the GitHub Actions workflow does not exist yet, follow these steps:
 
 2. Click on the **Actions** tab at the top.
 
-3. Click **"New Workflow"** or **"set up a workflow yourself"**.
+3. Click **"New Workflow"** or **"set up a workflow yourself"** if you see suggested templates.
 
-4. Create a new file inside:
+4. Create a new file inside this path:
    ```
    .github/workflows/deploy-gas-station.website.yml
    ```
 
-5. Paste your GitHub Actions YAML workflow (ZIP upload → Terraform → OWASP ZAP scan).
+5. Paste your GitHub Actions workflow YAML code into the file (uploads ZIP to S3, runs Terraform, OWASP ZAP scan).
 
-6. Commit the file to the `main` branch.
+6. **Commit** the workflow file to the `main` branch.
 
-✅ Done! Now GitHub Actions triggers on every push!
+7. After that, every push to `main` will automatically trigger the deployment pipeline!
+
+✅ Done! Your CI/CD pipeline is ready and fully automated!
 
 ---
 
@@ -218,7 +224,6 @@ If the GitHub Actions workflow does not exist yet, follow these steps:
 The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml` automates deployment on **every push to `main`**.
 
 ![GitHub Actions Overview](image-9.png)
-
 ---
 
 ## 📦 1. Upload Artifact to S3 (`upload-artifact`)
@@ -226,26 +231,26 @@ The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml
 - Checkout repository
 - Configure AWS credentials
 - Validate `S3_BUCKET_NAME` secret
-- Zip and upload app ZIP to S3 automatically
+- Zip and upload `gasstation-app.zip` to S3 automatically
 
-✅ No manual upload required!
+✅ No manual S3 upload!
 
 ---
 
 ## 🛠️ 2. Terraform Apply (`terraform-deploy`)
 
 - Checkout repository
-- Install Terraform
-- Terraform `init` using S3 + DynamoDB backend
-- Terraform `apply` infrastructure
+- Install Terraform v1.6.6
+- Terraform `init` using S3 backend
+- Terraform `apply` to deploy AWS infrastructure
 
 ---
 
 ## 🛡️ 3. DAST Scan with OWASP ZAP (`dast-scan`)
 
-- Wait for EC2 app to be reachable
-- Run dynamic OWASP ZAP scan
-- Generate HTML/Markdown/JSON reports
+- Wait for `https://gasstation.tamispaj.com/` to be reachable
+- Run OWASP ZAP Dynamic Security Scan
+- Generate and upload reports (`HTML`, `Markdown`, `JSON`)
 
 ---
 
@@ -255,7 +260,6 @@ The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml
 ![Running OWASP ZAP](image-13.png)  
 ![ZAP Report Generated](image-14.png)  
 ![Upload ZAP Report](image-10.png)
-
 ---
 
 ## ✅ Pipeline Summary
@@ -272,16 +276,16 @@ The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml
 
 ```
 app/
-├── app.js               # Express app entry
-├── db.js                # MySQL connection
+├── app.js               # Express API entry
+├── db.js                # MySQL connection via Secrets Manager
 ├── package.json         # Node.js dependencies
 ├── routes/
-│   └── stations.js      # API logic
+│   └── stations.js      # API routes
 ├── public/
-│   └── css/styles.css   # Static assets
+│   └── css/styles.css   # Frontend assets
 ├── views/
 │   └── index.html       # Landing page
-└── README.md            # Documentation
+└── README.md            # Project documentation
 ```
 
 ---
@@ -304,7 +308,6 @@ git pull origin main
 git status
 ```
 ![Git Status](image-7.png)
-
 ```bash
 # Stage changes
 git add .
@@ -321,8 +324,7 @@ git commit -m "updated readme"
 # Push changes
 git push origin main
 ```
-![Git Push](image-new.png) <!-- (your new Git push image) -->
-
+![alt text](image.png)
 ---
 
 ## 🧹 Clean Up
@@ -339,4 +341,6 @@ terraform destroy -auto-approve
 ## 👷‍♂️ Author
 
 Built by **@terencetatefua**  
-Built with ❤️ for cloud-native infrastructure.
+Designed with ❤️ for production-grade, cloud-native deployments.
+
+---
