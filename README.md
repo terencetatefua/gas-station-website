@@ -1,85 +1,38 @@
 # ⛽ FuelMaxPro — AWS Infrastructure + Node.js API
 
-A complete cloud-native fuel station API application deployed using **Terraform** and **Node.js**, hosted on AWS infrastructure. It includes a secure MySQL RDS backend, PM2-managed Node.js service on EC2, and HTTPS routing via ALB + Route 53.
+A cloud-native fuel station API deployed using **Terraform** and **Node.js**, hosted entirely on AWS.  
+Features a MySQL backend, scalable Node.js API, custom domain routing, GitHub Actions CI/CD, and OWASP ZAP security scanning.
 
 ---
 
 ## 🌟 Features
 
-- ⚙️ Infrastructure-as-Code with Terraform  
-- 🛰 Fully managed EC2 deployment with auto-scaling  
-- 🔐 Secure credentials from Secrets Manager  
-- 💾 MySQL database on RDS  
-- 🌐 Custom domain support via Route 53 + ACM  
-- ☁️ Application zipped and deployed from S3  
-- 📊 API to manage fuel stations  
-- 🖼 Simple front-end page included (HTML + CSS)
-
----
-
-## 📁 Folder Structure
-
-### 📁 `app/` Directory (Descending Order)
-
-```
-app/  
-├── views/  
-│   └── index.html  
-├── routes/  
-│   └── stations.js  
-├── public/  
-│   └── css/  
-│       └── styles.css  
-├── package.json  
-├── gasstation-app.zip  
-├── db.js  
-├── app.js  
-├── README.md
-```
-
-### 📁 `terraform/` Directory
-
-```
-terraform/  
-├── vpc.tf  
-├── variables.tf  
-├── terraform.tfvars  
-├── secret.tf  
-├── rds.tf  
-├── outputs.tf  
-├── iam.tf  
-├── ec2.tf  
-├── bootstrap.sh  
-├── alb.tf  
-├── route53.tf
-```
+- ⚙️ Infrastructure as Code (Terraform with remote S3 backend and DynamoDB locking)
+- 💾 MySQL database on Amazon RDS
+- 🛰 Node.js REST API deployed on EC2 Auto Scaling Groups
+- 🔐 Secure credentials using AWS Secrets Manager
+- 🌐 HTTPS via ACM + Route 53 DNS
+- ☁️ Application artifact (ZIP) managed in S3 via CI/CD
+- 🧪 OWASP ZAP Dynamic Application Security Testing (DAST)
+- 🔁 Full CI/CD pipeline with GitHub Actions
 
 ---
 
 ## ✅ Prerequisites
 
-Before deploying this project, ensure the following are in place:
-
-### 1️⃣ AWS Credentials
-
-Ensure you're authenticated with AWS:
-
-```bash
-aws configure
-```
-
-Or use an IAM role if deploying from CI/CD or Terraform Cloud.
+Before running Terraform or pushing code, complete these **manual AWS Console setups**:
 
 ---
 
-### 2️⃣ Existing Route 53 Hosted Zone
+### 🛠️ Manual AWS Console Prerequisites
 
-You must already own a domain hosted in AWS Route 53 (e.g. yourdomain.com).  
-Terraform will:
+---
 
-- Create `gasstation.yourdomain.com`  
-- Request an ACM SSL certificate  
-- Update your `terraform.tfvars`:
+### 1. 📜 Route 53 Hosted Zone and Domain
+
+- Buy or own a domain (e.g., `yourdomain.com`).
+- Create a hosted zone in Route 53 for that domain.
+- Record the domain and subdomain in `terraform.tfvars`:
 
 ```hcl
 hosted_zone_name = "yourdomain.com"
@@ -88,16 +41,55 @@ subdomain_record = "gasstation"
 
 ---
 
-### 3️⃣ Secrets Manager Credentials
+### 2. 📦 Create S3 Bucket for Terraform State
 
-Manually create the RDS credentials secret in AWS Secrets Manager.
+- Go to **AWS Console → S3 → Create bucket**  
+- Bucket Name: `fuelmaxpro-tf-state`  
+- Region: `us-east-2 (Ohio)`
 
-**Secret name:**
+---
+
+### 3. 🗄️ Create DynamoDB Table for Terraform Locking
+
+- Go to **AWS Console → DynamoDB → Create table**  
+- Table Name: `terraform-locks`  
+- Partition Key:  
+  - Name: `LockID`
+  - Type: `String`
+
+_Configure backend in `main.tf`:_
+
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "fuelmaxpro-tf-state"
+    key            = "infrastructure/terraform.tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+}
 ```
-fuelmaxpro-db-credentials
-```
 
-**Secret value (JSON):**
+---
+
+### 4. ☁️ Create S3 Bucket for App Artifact Storage
+
+✅ **No manual app upload needed anymore** (handled by pipeline).  
+You only need to create the bucket:
+
+- Go to **AWS Console → S3 → Create Bucket**
+- Bucket Name: `fuelmaxpro-app-artifacts`
+- Region: `us-east-2 (Ohio)`
+
+---
+
+### 5. 🔐 Create Secrets Manager Secret for DB Credentials
+
+- Go to **AWS Console → Secrets Manager → Store a new secret**
+- Secret Name: `fuelmaxpro-db-credentials`
+- Secret Value:
+
 ```json
 {
   "name": "admin",
@@ -107,26 +99,11 @@ fuelmaxpro-db-credentials
 
 ---
 
-### 4️⃣ Zip the Application & Upload to S3
+### 6. 🔑 Create EC2 Key Pair
 
-From within the `app/` directory:
-
-```bash
-zip -r gasstation-app.zip . -x "*.env"
-```
-
-Then upload to your S3 bucket (e.g. `fuelmaxpro-app-artifacts`):
-
-```bash
-aws s3 cp gasstation-app.zip s3://fuelmaxpro-app-artifacts/
-```
-
----
-
-### 5️⃣ SSH Key Pair
-
-Make sure you have a key pair in your AWS region to enable SSH access.  
-Add it to your `terraform.tfvars`:
+- Go to **AWS Console → EC2 → Key Pairs → Create Key Pair**
+- Key Name: `tristy`
+- Save the `.pem` file securely.
 
 ```hcl
 key_name = "tristy"
@@ -134,11 +111,9 @@ key_name = "tristy"
 
 ---
 
-### 6️⃣ Terraform Installed
+## 🧱 Terraform Setup
 
-Install Terraform CLI 👉 [Download Terraform](https://developer.hashicorp.com/terraform/downloads)
-
-Verify installation:
+Install Terraform CLI version ≥ 1.3:
 
 ```bash
 terraform version
@@ -153,29 +128,27 @@ cd terraform
 terraform init
 terraform apply -auto-approve
 ```
-![alt text](image.png)
+
 ---
 
 ## 🌐 Test the API
 
-Once deployed, you should be able to access your endpoint:
-
 ```bash
 curl https://gasstation.yourdomain.com/
-# => Welcome to FuelMaxPro API 🚀
 ```
-![alt text](image-2.png)
+![Test API](images/image.png)
 ---
 
-## 📄 API Endpoints
+## 📦 API Endpoints
 
-- `GET /stations`  
-  ➡️ Get all stations
+| Method | Route        | Description            |
+|--------|--------------|-------------------------|
+| GET    | `/stations`  | List all fuel stations  |
+| POST   | `/stations`  | Add a new station record |
 
-- `POST /stations`  
-  ➡️ Add a new station
+---
 
-**Sample payload:**
+## 🧪 Example POST Payload
 
 ```json
 {
@@ -187,9 +160,21 @@ curl https://gasstation.yourdomain.com/
 
 ---
 
-## 🧠 SQL to Initialize RDS
+## 🔐 Environment Variables (.env)
 
-If needed, log in to the RDS instance and manually initialize the DB:
+The `.env` file is generated dynamically on the EC2 instance:
+
+```env
+DB_HOST=<your-rds-endpoint>
+DB_USER=<username-from-secrets-manager>
+DB_PASS=<password-from-secrets-manager>
+DB_NAME=gasstations
+PORT=3000
+```
+
+---
+
+## 🧠 Manual SQL Schema Init (Optional)
 
 ```sql
 CREATE DATABASE gasstations;
@@ -204,20 +189,148 @@ CREATE TABLE stations (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-![alt text](image-1.png)
+![SQL Schema Setup](images/image-4.png)
 ---
 
-## 🧹 Clean Up
+# 🔁 GitHub Actions CI/CD Pipeline
 
-To tear down everything:
+## 🛠️ How to Create the GitHub Actions Workflow (deploy-gas-station.website.yml)
+
+If the GitHub Actions workflow does not exist yet, follow these steps:
+
+1. Go to your **GitHub repository** (e.g., `https://github.com/your-repo-name`).
+
+2. Click on the **Actions** tab at the top.
+
+3. Click **"New Workflow"** or **"set up a workflow yourself"** if you see suggested templates.
+
+4. Create a new file inside this path:
+   ```
+   .github/workflows/deploy-gas-station.website.yml
+   ```
+
+5. Paste your GitHub Actions workflow YAML code into the file (uploads ZIP to S3, runs Terraform, OWASP ZAP scan).
+
+6. **Commit** the workflow file to the `main` branch.
+
+7. After that, every push to `main` will automatically trigger the deployment pipeline!
+
+✅ Done! Your CI/CD pipeline is ready and fully automated!
+
+---
+
+![Workflow File Structure](045a47a4-f31e-4da1-b314-c0c8c3410180.png)
+
+The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml` automates deployment on **every push to `main`**.
+
+![GitHub Actions Overview](images/image-9.png)
+---
+
+## 📦 1. Upload Artifact to S3 (`upload-artifact`)
+
+- Checkout repository
+- Configure AWS credentials
+- Validate `S3_BUCKET_NAME` secret
+- Zip and upload `gasstation-app.zip` to S3 automatically
+
+✅ No manual S3 upload!
+
+---
+
+## 🛠️ 2. Terraform Apply (`terraform-deploy`)
+
+- Checkout repository
+- Install Terraform v1.6.6
+- Terraform `init` using S3 backend
+- Terraform `apply` to deploy AWS infrastructure
+
+---
+
+## 🛡️ 3. DAST Scan with OWASP ZAP (`dast-scan`)
+
+- Wait for `https://gasstation.tamispaj.com/` to be reachable
+- Run OWASP ZAP Dynamic Security Scan
+- Generate and upload reports (`HTML`, `Markdown`, `JSON`)
+
+---
+
+### 📸 OWASP ZAP and Security Pipeline Screenshots
+
+![Wait for App Ready](images/image-12.png)  
+
+## ✅ Pipeline Summary
+
+| Stage            | Purpose                      | Output               |
+|------------------|-------------------------------|-----------------------|
+| upload-artifact  | Upload app ZIP to S3 bucket    | `gasstation-app.zip` |
+| terraform-deploy | Deploy AWS infrastructure     | EC2, ALB, RDS created |
+| dast-scan        | Run OWASP security scan        | `zap_report.html`    |
+
+---
+
+## 📁 Project Structure
+
+```
+app/
+├── app.js               # Express API entry
+├── db.js                # MySQL connection via Secrets Manager
+├── package.json         # Node.js dependencies
+├── routes/
+│   └── stations.js      # API routes
+├── public/
+│   └── css/styles.css   # Frontend assets
+├── views/
+│   └── index.html       # Landing page
+└── README.md            # Project documentation
+```
+
+---
+
+## 🧠 Git Workflow
 
 ```bash
-terraform destroy -auto-approve
+# Clone repository
+git clone https://github.com/terencetatefua/gas-station-website.git
+
+cd gas-station-website
+
+# Pull latest changes
+git pull origin main
 ```
-![alt text](image-3.png)
+![Git Pull](images/image-8.png)
+
+```bash
+# Check repo status
+git status
+```
+![Git Status](images/image-7.png)
+```bash
+# Stage changes
+git add .
+```
+![Git Add](images/image-5.png)
+```bash
+# Commit changes
+git commit -m "updated readme"
+```
+![Git Commit](images/image-6.png)
+```bash
+# Push changes
+git push origin main
+```
+![alt text](images/image-17.png)
+---
+## 🧹 Clean Up
+
+To destroy the infrastructure:
+
+```bash
+terraform destroy -auto-approve (from the command line)
+```
+![Terraform Destroy](images/image-11.png)
 ---
 
 ## 👷‍♂️ Author
 
-Developed by **@terencetatefua**  
-Built with ❤️ for cloud-native infrastructure.
+Built by **@terencetatefua**  
+---
