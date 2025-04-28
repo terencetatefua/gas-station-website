@@ -136,7 +136,7 @@ terraform apply -auto-approve
 ```bash
 curl https://gasstation.yourdomain.com/
 ```
-![Test API](image.png)
+![Test API](images/image.png)
 ---
 
 ## 📦 API Endpoints
@@ -189,7 +189,7 @@ CREATE TABLE stations (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-![SQL Schema Setup](image-4.png)
+![SQL Schema Setup](images/image-4.png)
 ---
 
 # 🔁 GitHub Actions CI/CD Pipeline
@@ -223,7 +223,7 @@ If the GitHub Actions workflow does not exist yet, follow these steps:
 
 The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml` automates deployment on **every push to `main`**.
 
-![GitHub Actions Overview](image-9.png)
+![GitHub Actions Overview](images/image-9.png)
 ---
 
 ## 📦 1. Upload Artifact to S3 (`upload-artifact`)
@@ -256,11 +256,7 @@ The GitHub Actions workflow at `.github/workflows/deploy-gas-station.website.yml
 
 ### 📸 OWASP ZAP and Security Pipeline Screenshots
 
-![Wait for App Ready](image-12.png)  
-![Running OWASP ZAP](image-13.png)  
-![ZAP Report Generated](image-14.png)  
-![Upload ZAP Report](image-10.png)
----
+![Wait for App Ready](images/image-12.png)  
 
 ## ✅ Pipeline Summary
 
@@ -301,46 +297,40 @@ cd gas-station-website
 # Pull latest changes
 git pull origin main
 ```
-![Git Pull](image-8.png)
+![Git Pull](images/image-8.png)
 
 ```bash
 # Check repo status
 git status
 ```
-![Git Status](image-7.png)
+![Git Status](images/image-7.png)
 ```bash
 # Stage changes
 git add .
 ```
-![Git Add](image-5.png)
-
+![Git Add](images/image-5.png)
 ```bash
 # Commit changes
 git commit -m "updated readme"
 ```
-![Git Commit](image-6.png)
-
+![Git Commit](images/image-6.png)
 ```bash
 # Push changes
 git push origin main
 ```
-![alt text](image.png)
+![alt text](images/image-17.png)
 ---
-
 ## 🧹 Clean Up
 
 To destroy the infrastructure:
 
 ```bash
-terraform destroy -auto-approve
+terraform destroy -auto-approve (from the command line)
 ```
-![Terraform Destroy](image-11.png)
-
+![Terraform Destroy](images/image-11.png)
 ---
 
 ## 👷‍♂️ Author
 
 Built by **@terencetatefua**  
-Designed with ❤️ for production-grade, cloud-native deployments.
-
 ---
